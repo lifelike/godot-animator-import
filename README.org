@@ -15,7 +15,7 @@ using a palette of 256 18-bit colors.
 *** FLI
 Animations imported to Godot textures. The importer can be configured
 to only import a limited range of frames, and to cut out
-only a subset of each frame. Background color can be
+only a smaller rectangle of each frame. Background color can be
 rendered as transparent or not. The created texture will be smaller
 than specified if that is required to make it evenly divisable by
 the animation size, to make it possible to animate easily using
