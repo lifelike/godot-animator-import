@@ -2,9 +2,8 @@
 A collection of [[https://godotengine.org/][Godot]] importer scripts for files saved from the classic graphics
 application formerly known as Autodesk Animator (also Ani Pro, PJ Paint; called
 simply Animator in this document). More background information can be found
-[[https://en.wikipedia.org/wiki/Autodesk_Animator][on wikipedia]], full Animator [[https://github.com/AnimatorPro/Animator-Pro][source code is on GitHub]], as is the [[https://github.com/AnimatorPro/Animator-Pro/downloads][download page]]. The
-application only runs in MSDOS, so you need something like [[https://www.dosbox.com/][DOSBox]] or [[http://www.freedos.org/][FreeDOS]] to
-run it. This addon was tested in Godot 3.0.6.
+[[https://en.wikipedia.org/wiki/Autodesk_Animator][on wikipedia]], full Animator [[https://github.com/AnimatorPro/Animator-Pro][source code is on GitHub]], as is the [[https://github.com/AnimatorPro/Animator-Pro/downloads][download page]].
+This addon was tested in Godot 3.0.6.
 
 ** Included Importers
 Importers for the following file formats are
@@ -72,8 +71,9 @@ This is actually the same file format (and importer) as a CEL, only
 that it always covers the entire 320x200 screen.
 
 ** Notes on running Animator
-When running Animator on a desktop computer alongside Godot it
-is very convenient to run it in DOSBox and to have the DOSBox
+Animator only runs in MSDOS, so you need something like [[https://www.dosbox.com/][DOSBox]] or [[https://www.freedos.org/][FreeDOS]] to run
+it. When running Animator on a desktop computer alongside Godot it
+is convenient to run it in DOSBox and to have the DOSBox
 preferences file set up to launch Animator with the current
 directory mounted. The following command does that (given that
 you first have copied the AA.EXE binary to the current directory;
