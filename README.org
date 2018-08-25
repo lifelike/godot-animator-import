@@ -1,4 +1,4 @@
-* Godot Animator FLI etc Import Addon
+* Godot Animator Importer Plugin
 A collection of [[https://godotengine.org/][Godot]] importer scripts for files saved from the classic graphics
 application formerly known as Autodesk Animator (also Ani Pro, PJ Paint; called
 simply Animator in this document). More background information can be found
