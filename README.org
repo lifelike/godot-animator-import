@@ -1,0 +1,120 @@
+* Godot Animator FLI etc Import Addon
+A collection of [[https://godotengine.org/][Godot]] importer scripts for files saved from the classic graphics
+application formerly known as Autodesk Animator (also Ani Pro, PJ Paint; called
+simply Animator in this document). More background information can be found
+[[https://en.wikipedia.org/wiki/Autodesk_Animator][on wikipedia]], full Animator [[https://github.com/AnimatorPro/Animator-Pro][source code is on GitHub]], as is the [[https://github.com/AnimatorPro/Animator-Pro/downloads][download page]]. The
+application only runs in MSDOS, so you need something like [[https://www.dosbox.com/][DOSBox]] or [[http://www.freedos.org/][FreeDOS]] to
+run it. This addon was tested in Godot 3.0.6.
+
+** Included Importers
+Importers for the following file formats are
+included in this addon. For technical details about
+these file formats see [[https://github.com/AnimatorPro/Animator-Pro/blob/master/src/V/FILES.DOC][this file]]. Unless otherwise
+specified all graphics are in 8-bit indexed color
+using a palette of 256 18-bit colors.
+
+*** FLI
+Animations imported to Godot textures. The importer can be configured
+to only import a limited range of frames, and to cut out
+only a subset of each frame. Background color can be
+rendered as transparent or not. The created texture will be smaller
+than specified if that is required to make it evenly divisable by
+the animation size, to make it possible to animate easily using
+Godot's built-in frames support.
+
+Note that very long animations are not possible yet since the texture size is
+limited by graphics hardware, so longer animations have to be split up into
+shorter files. Long fullscreen animations are probably better to convert to some
+more modern format supported by Godot for displaying as video rather than
+imported as a sprite anyway though.
+
+There is no support for FLC-files (yet?). FLC was the animation
+format use in Autodesk Animator Pro. It supports higher resolutions
+and more colors. The file format is very similar to the older FLI,
+but with some additions, so it should be possible to add support
+for it eventually if there is demand (or/and a pull request).
+
+*** CEL
+You can save the current rectangular clipboard ("cel") contents
+to an uncompressed image file in CEL format. It can be up to
+320x200 pixels. Internally in Godot they will appear as a PNG-compressed
+texture. Background pixels can be set to transparent or not.
+
+The location of a cel copied in Animator is saved in the CEL file,
+but that information is not used by the importer. Only the size,
+palette, and image data is imported.
+
+*** PLY
+Polygons drawn in Animator can be saved to these simple binary files.
+This importer creates a PackedScene containing a Path2D node. Coordinates
+are all integers in the range 0,0 to 319,199. Like an extremely
+simple and not very useful vector image file. Possibly more useful
+to read in from a script and use for path-finding or collision
+polygons (somehow?). Or possibly not useful at all.
+
+*** COL
+This is a 256 color palette. It is imported as a texture in Godot.
+It is not known what these can be used for. It is possible to
+configure the number of rows and columns to use to lay out the
+colors (1 pixel per color).
+
+*** MSK
+A 320x200 bitmap ("mask") used in Animator to mask out certain parts
+of the screen while drawing. They are imported as Bitmap resources
+in Godot. What can these be used for?
+
+*** PIC
+These are still images saved from Animator. The default
+save-format is GIF, but here only the uncompressed PIC
+format is supported. To save to PIC the file must be
+named with a PIC extension (it is a semi-hidden feature).
+This is actually the same file format (and importer) as a CEL, only
+that it always covers the entire 320x200 screen.
+
+** Notes on running Animator
+When running Animator on a desktop computer alongside Godot it
+is very convenient to run it in DOSBox and to have the DOSBox
+preferences file set up to launch Animator with the current
+directory mounted. The following command does that (given that
+you first have copied the AA.EXE binary to the current directory;
+presumably the Godot project directory):
+
+#+BEGIN_SRC sh
+dosbox -fullscreen \
+       -c "mount d `pwd`" \
+       -c "d:" \
+       -c "AA.EXE" \
+       -c "exit"
+#+END_SRC
+
+Probably save that to a shell script. Something similar should
+be possible in a Windows BAT-file.
+
+You may want to add *AA.EXE* and *AAT* to /.gitignore/. AAT
+is the directory used by Animator to save temporary files. It
+also contains all current state, so Animator can pick up exactly
+where you left off. All configuration made inside of the application
+is also saved there, so by launching Animator in different Godot
+project directories you can have individual configuration for
+different projects.
+
+** License
+Copyright (c) 2018 Pelle Nilsson
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
