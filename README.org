@@ -97,9 +97,24 @@ where you left off. All configuration made inside of the application
 is also saved there, so by launching Animator in different Godot
 project directories you can have individual configuration for
 different projects.
+** Notes on Importing Image to Animator
+Animator only supports the ancient **GIF87** format, not
+**GIF89** that is what any GIF file you find in the wild
+today is. Images must be 320x200 pixels.
+Animator ships with a **CONVERT.EXE** tool
+that can be used to fix that, and it can also convert
+from some old file formats like **PCX** and **TGA**.
 
+A quick way to get images prepare an image to open
+with Animator is to use [[https://www.imagemagick.org][ImageMagick]]. Filenames given
+to ImageMagick tools can be prefixed with a file type.
+A command-line to crop (or expand) an image to a 320x200
+GIF that Animator can open looks something like this:
+#+BEGIN_SRC shell
+convert infile.png -background black -extent 320x200 GIF87:outfile.gif
+#+END_SRC
 ** License
-Copyright (c) 2018 Pelle Nilsson
+Copyright (c) 2018-2019 Pelle Nilsson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
