@@ -119,9 +119,7 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   var texture_size = Vector2(colsfit * options.clip.size.x,
     rowsfit * options.clip.size.y)
 
-  var colors = []
-  for c in range(256):
-    colors.push_back(Color8(0, 0, 0, 0))
+  var colors = make_empty_palette()
   var image = Image.new()
   var format = Image.FORMAT_RGBA8 if options.alpha else Image.FORMAT_RGB8
   image.create(texture_size.x, texture_size.y,
@@ -175,10 +173,9 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
           var nr_colors = file.get_8()
           if nr_colors == 0:
             nr_colors = 256
-          var newcolors = read_palette(file, options.alpha, nr_colors)
-          for i in range(nr_colors):
-            colors[c] = newcolors[i]
-            c += 1
+          read_palette_into(file, colors,
+            options.alpha, c, nr_colors)
+          c += nr_colors
       elif chunktype == FLI_BRUN:
         from_brun_lines(file, frameimage, colors, 0, height, width, true)
       else:

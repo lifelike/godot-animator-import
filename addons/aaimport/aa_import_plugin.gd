@@ -1,15 +1,27 @@
 tool
 extends EditorImportPlugin
 
-func read_palette(file, alpha=false, nr=256):
+func make_empty_palette():
   var colors = []
-  for c in range(nr):
+  for c in range(256):
+    colors.push_back(Color.black)
+  return colors
+
+func read_palette_into(file, colors, alpha=true, offset=0, nr=256):
+  assert(offset >= 0)
+  assert(nr >= 1)
+  assert(offset + nr <= 256)
+  for c in range(offset, offset+nr) :
     var r = file.get_8() * 4
     var g = file.get_8() * 4
     var b = file.get_8() * 4
-    colors.push_back(Color8(r, g, b))
-  if alpha:
+    colors[c] = (Color8(r, g, b))
+  if alpha and offset == 0:
     colors[0] = Color8(0, 0, 0, 0)
+
+func read_palette(file, alpha=true):
+  var colors = make_empty_palette()
+  read_palette_into(file, colors, alpha)
   return colors
 
 func save_stex(image, save_path):
