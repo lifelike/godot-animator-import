@@ -42,7 +42,6 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   var colors = read_palette(file, options.alpha)
   var image = Image.new()
   var format = Image.FORMAT_RGBA8 if options.alpha else Image.FORMAT_RGB8
-  print(format)
   if options.columns < 1 or options.columns > 256:
     print("Columns must be 1 to 256")
     return ERR_PARAMETER_RANGE_ERROR
