@@ -44,6 +44,13 @@ func get_import_options(preset):
 
 func get_option_visibility(option, options):
   return true
+  
+func get_signed_8(file):
+  var v = file.get_8()
+  if v > 127:
+    return v - 256
+  else:
+    return v
 
 func from_brun_lines(file, image, colors, starty, nrlines, width, brun):
   for y in range(starty, starty + nrlines):
@@ -53,9 +60,7 @@ func from_brun_lines(file, image, colors, starty, nrlines, width, brun):
       if not brun:
         var skip_count = file.get_8()
         x += skip_count
-      var size_count = file.get_8()
-      if size_count > 127:
-        size_count = -256 + size_count
+      var size_count = get_signed_8(file)
       if brun:
         size_count = -size_count
       if size_count > 0:
@@ -75,10 +80,10 @@ func from_brun_lines(file, image, colors, starty, nrlines, width, brun):
 
 func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   if options.start_frame < 1:
-    print("FLI can not import from frame < 1")
+    print("FLIC can not import from frame < 1")
     return ERR_PARAMETER_RANGE_ERROR
   if options.end_frame < options.start_frame:
-    print("FLI can not import frame end < frame start")
+    print("FLIC can not import frame end < frame start")
     return ERR_PARAMETER_RANGE_ERROR
   var file = File.new()
   var err = file.open(source_file, File.READ)
@@ -90,15 +95,11 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   if filemagic == 0xAF12:
     is_flc = true
   elif filemagic != 0xAF11:
-    print("FLI file magic number not expected 0xAF11 or 0xAF12")
+    print("FLIC file magic number not expected 0xAF11 or 0xAF12")
     return ERR_FILE_CORRUPT
-  # this includes the last frame that is the diff to loop
-  # back to first frame if there are more then one
   var nrframes = file.get_16()
-  if nrframes > 1:
-    nrframes -= 1
   if options.start_frame > nrframes:
-    print("FLI start_frame %d > %d (nr frames in FLI)"
+    print("FLIC start_frame %d > %d (nr frames in FLI)"
       % [options.start_frame, nrframes])
     return ERR_PARAMETER_RANGE_ERROR
   var width = file.get_16()
@@ -111,7 +112,7 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
     return ERR_FILE_CORRUPT
   var bpp = file.get_16()
   if bpp != 8:
-    print("FLI file with other than 8 bits per pixel not supported")
+    print("FLIC file with other than 8 bits per pixel not supported")
     return ERR_FILE_CORRUPT
   var flags = file.get_16() # ignored, should be 0 though
   var speed = file.get_16() # ignored?
@@ -148,11 +149,10 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
     var framesize = file.get_32() # ignore
     var framemagic = file.get_16()
     if is_flc and framemagic == 0xF100: # prefix frame
-      print("Skipping prefix frame ", framesize)
       file.seek(framestart + framesize)
       continue
     if framemagic != 0xF1FA:
-      print("FLIC file frame magic number not expected 0xF1FA")
+      print("FLIC file frame magic number not expected 0xF1FA or 0xF100")
       return ERR_FILE_CORRUPT
     var nrchunks = file.get_16()
     for i in range(8):
@@ -195,46 +195,62 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
         var y = 0
         var nr_lines = file.get_16()
         for line in range(nr_lines):
-          print("line chunk ", line)
           var packet_count = 0
           var parsing_opcodes = true
           while parsing_opcodes:
             var opcode = file.get_16()
             var opcode_type = ((opcode & 0xC000) >> 14)
-            print("opcode type ", opcode_type)
             match opcode_type:
               0:
-                print("packet count", opcode)
                 packet_count = opcode
                 parsing_opcodes = false
               1:
                 print("FLIC undefined FLC_DELTA opcode type 1")
+                return ERR_FILE_CORRUPT
               2:
                 var color = (opcode & 0xff)
-                print("last pixel color ", color)
                 frameimage.set_pixel(width - 1, y, colors[color])
               3:
-                var skip_lines = (~opcode) + 1 # abs of two-complement
-                print("line skip ", skip_lines)
+                var skip_lines = 0x7fff - (opcode & 0x7fff) # abs of two-complement
                 y += skip_lines
-          print("done parsing opcodes, packet count: ", packet_count)
+                if y >= height:
+                  print("y >= height")
+                  return ERR_FILE_CORRUPT
+                if y < 0:
+                  print("y < 0")
+                  return ERR_FILE_CORRUPT
           var x = 0
           for packet in range(packet_count):
             x += file.get_8() # column skip
-            var count = file.get_8()
+            var count = get_signed_8(file)
             if count > 0: # copy count words to image
-              if x > width:
+              if x >= width:
+                  print("x >= width")
                 return ERR_FILE_CORRUPT
               for c in range(count * 2):
+                if x >= width:
+                  print("x >= width")
+                  return ERR_FILE_CORRUPT
                 frameimage.set_pixel(x, y, colors[file.get_8()])
                 x += 1
             elif count < 0: # copy count copies of color to image
-              var color = colors[file.get_8()]
+              var color1 = colors[file.get_8()]
+              var color2 = colors[file.get_8()]
               for c in range(-count):
-                if x > width:
+                if x >= width:
+                  print("x >= width")
                   return ERR_FILE_CORRUPT
-                frameimage.set_pixel(x, y, color)
+                frameimage.set_pixel(x, y, color1)
                 x += 1
+                if x >= width:
+                  print("x >= width")
+                  return ERR_FILE_CORRUPT
+                frameimage.set_pixel(x, y, color2)
+                x += 1
+          y += 1
+          if y >= height:
+            print("y >= height")
+            return ERR_FILE_CORRUPT
       else:
         print("FLIC unknown chunk type %d" % [chunktype])
       file.seek(chunkstart + chunksize)
