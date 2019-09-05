@@ -12,7 +12,7 @@ these file formats see [[https://github.com/AnimatorPro/Animator-Pro/blob/master
 specified all graphics are in 8-bit indexed color
 using a palette of 256 18-bit colors.
 
-*** FLI
+*** FLIC
 Animations imported to Godot textures. The importer can be configured
 to only import a limited range of frames, and to cut out
 only a smaller rectangle of each frame. Background color can be
@@ -27,12 +27,8 @@ shorter files. Long fullscreen animations are probably better to convert to some
 more modern format supported by Godot for displaying as video rather than
 imported as a sprite anyway though.
 
-There is no support for FLC-files (yet?). FLC was the animation
-format use in Autodesk Animator Pro. It supports higher resolutions
-and more colors. The file format is very similar to the older FLI,
-but with some additions, so it should be possible to add support
-for it eventually if there is demand (or/and a pull request).
-
+Supports older FLI files (from original Autodesk Animator) as well
+as newer FLC files (from Autodesk Animator Pro).
 *** CEL
 You can save the current rectangular clipboard ("cel") contents
 to an uncompressed image file in CEL format. It can be up to

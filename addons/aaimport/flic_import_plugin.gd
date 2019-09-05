@@ -1,7 +1,9 @@
 tool
 extends "aa_import_plugin.gd"
 
-const FLI_COLOR = 11
+const FLC_COLOR_256 = 4
+const FLC_DELTA = 7
+const FLI_COLOR_64 = 11
 const FLI_LC = 12
 const FLI_BLACK = 13
 const FLI_BRUN = 15
@@ -11,20 +13,20 @@ func get_importer_name():
   return "aaimport.fli"
 
 func get_visible_name():
-  return "Animator FLI"
-  
+  return "Animator FLIC"
+
 func get_recognized_extensions():
-  return ["fli"]
+  return ["fli", "flc", "flic"]
 
 func get_save_extension():
   return "stex"
-  
+
 func get_resource_type():
   return "StreamTexture"
 
 func get_preset_count():
   return 1
-  
+
 func get_preset_name(preset):
   return "Default"
 
@@ -42,7 +44,7 @@ func get_import_options(preset):
 
 func get_option_visibility(option, options):
   return true
-  
+
 func from_brun_lines(file, image, colors, starty, nrlines, width, brun):
   for y in range(starty, starty + nrlines):
     var x = 0
@@ -66,7 +68,7 @@ func from_brun_lines(file, image, colors, starty, nrlines, width, brun):
         var colorindex = file.get_8()
         var color = colors[colorindex]
         for i in range(-size_count):
-          if x + i > width: 
+          if x + i > width:
             return
           image.set_pixel(x + i, y, color)
         x -= size_count
@@ -83,8 +85,12 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   if err != OK:
     return err
   var filesize = file.get_32() # ignore
-  if file.get_16() != 0xAF11:
-    print("FLI file magic number not expected 0xAF11")
+  var filemagic = file.get_16()
+  var is_flc = false
+  if filemagic == 0xAF12:
+    is_flc = true
+  elif filemagic != 0xAF11:
+    print("FLI file magic number not expected 0xAF11 or 0xAF12")
     return ERR_FILE_CORRUPT
   # this includes the last frame that is the diff to loop
   # back to first frame if there are more then one
@@ -96,11 +102,11 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
       % [options.start_frame, nrframes])
     return ERR_PARAMETER_RANGE_ERROR
   var width = file.get_16()
-  if width != 320:
+  if width != 320 and not is_flc:
     print("FLI width %d is not 320" % [width])
     return ERR_FILE_CORRUPT
   var height = file.get_16()
-  if height != 200:
+  if height != 200 and not is_flc:
     print("FLI height %d is not 200" % [height])
     return ERR_FILE_CORRUPT
   var bpp = file.get_16()
@@ -130,17 +136,23 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   frameimage.lock()
 
   var framerect = Rect2(Vector2(0, 0), options.clip.size)
-  
+
   # Frame numbers in import settings start at 1
   # (because frame numbers in Animator does)
   var firstframe = options.start_frame - 1
   var lastframe = min(options.start_frame + nrframes - 1,
     options.end_frame)
-  
+
   for frame in range(lastframe) :
+    var framestart = file.get_position()
     var framesize = file.get_32() # ignore
-    if file.get_16() != 0xF1FA:
-      print("FLI file frame magic number not expected 0xF1FA")
+    var framemagic = file.get_16()
+    if is_flc and framemagic == 0xF100: # prefix frame
+      print("Skipping prefix frame ", framesize)
+      file.seek(framestart + framesize)
+      continue
+    if framemagic != 0xF1FA:
+      print("FLIC file frame magic number not expected 0xF1FA")
       return ERR_FILE_CORRUPT
     var nrchunks = file.get_16()
     for i in range(8):
@@ -149,7 +161,7 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
       var chunkstart = file.get_position()
       var chunksize = file.get_32()
       var chunktype = file.get_16()
-      
+
       if chunktype == FLI_BLACK:
         # FIXME there is probably a better way
         for y in range(height):
@@ -165,7 +177,7 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
           for x in range(width):
             var i = file.get_8()
             frameimage.set_pixel(x, y, colors[i])
-      elif chunktype == FLI_COLOR:
+      elif chunktype == FLI_COLOR_64 or chunktype == FLC_COLOR_256:
         var nr_packets = file.get_16()
         var c = 0
         for packet in range(nr_packets):
@@ -174,13 +186,57 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
           if nr_colors == 0:
             nr_colors = 256
           read_palette_into(file, colors,
-            options.alpha, c, nr_colors)
+            options.alpha, c, nr_colors,
+            chunktype == FLC_COLOR_256)
           c += nr_colors
       elif chunktype == FLI_BRUN:
         from_brun_lines(file, frameimage, colors, 0, height, width, true)
+      elif chunktype == FLC_DELTA:
+        var y = 0
+        var nr_lines = file.get_16()
+        for line in range(nr_lines):
+          print("line chunk ", line)
+          var packet_count = 0
+          var parsing_opcodes = true
+          while parsing_opcodes:
+            var opcode = file.get_16()
+            var opcode_type = ((opcode & 0xC000) >> 14)
+            print("opcode type ", opcode_type)
+            match opcode_type:
+              0:
+                print("packet count", opcode)
+                packet_count = opcode
+                parsing_opcodes = false
+              1:
+                print("FLIC undefined FLC_DELTA opcode type 1")
+              2:
+                var color = (opcode & 0xff)
+                print("last pixel color ", color)
+                frameimage.set_pixel(width - 1, y, colors[color])
+              3:
+                var skip_lines = (~opcode) + 1 # abs of two-complement
+                print("line skip ", skip_lines)
+                y += skip_lines
+          print("done parsing opcodes, packet count: ", packet_count)
+          var x = 0
+          for packet in range(packet_count):
+            x += file.get_8() # column skip
+            var count = file.get_8()
+            if count > 0: # copy count words to image
+              if x > width:
+                return ERR_FILE_CORRUPT
+              for c in range(count * 2):
+                frameimage.set_pixel(x, y, colors[file.get_8()])
+                x += 1
+            elif count < 0: # copy count copies of color to image
+              var color = colors[file.get_8()]
+              for c in range(-count):
+                if x > width:
+                  return ERR_FILE_CORRUPT
+                frameimage.set_pixel(x, y, color)
+                x += 1
       else:
-        print("FLI unknown chunk type %d" % [chunktype])
-        return ERR_FILE_CORRUPT
+        print("FLIC unknown chunk type %d" % [chunktype])
       file.seek(chunkstart + chunksize)
     if frame >= firstframe:
       image.blit_rect(frameimage, options.clip, framerect.position)

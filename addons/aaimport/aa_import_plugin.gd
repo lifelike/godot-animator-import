@@ -7,14 +7,18 @@ func make_empty_palette():
     colors.push_back(Color.black)
   return colors
 
-func read_palette_into(file, colors, alpha=true, offset=0, nr=256):
+func read_palette_into(file, colors, alpha=true, offset=0, nr=256,
+  is_flc_colors=false):
   assert(offset >= 0)
   assert(nr >= 1)
   assert(offset + nr <= 256)
+  var multiplier = 4
+  if is_flc_colors:
+    multiplier = 1
   for c in range(offset, offset+nr) :
-    var r = file.get_8() * 4
-    var g = file.get_8() * 4
-    var b = file.get_8() * 4
+    var r = file.get_8() * multiplier
+    var g = file.get_8() * multiplier
+    var b = file.get_8() * multiplier
     colors[c] = (Color8(r, g, b))
   if alpha and offset == 0:
     colors[0] = Color8(0, 0, 0, 0)
