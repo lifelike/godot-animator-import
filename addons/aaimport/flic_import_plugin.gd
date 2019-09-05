@@ -44,7 +44,7 @@ func get_import_options(preset):
 
 func get_option_visibility(option, options):
   return true
-  
+
 func get_signed_8(file):
   var v = file.get_8()
   if v > 127:
