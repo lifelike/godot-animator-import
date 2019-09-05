@@ -44,7 +44,7 @@ func get_import_options(preset):
 
 func get_option_visibility(option, options):
   return true
-  
+
 func get_signed_8(file):
   var v = file.get_8()
   if v > 127:
@@ -225,7 +225,7 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
             var count = get_signed_8(file)
             if count > 0: # copy count words to image
               if x >= width:
-                  print("x >= width")
+                print("x >= width")
                 return ERR_FILE_CORRUPT
               for c in range(count * 2):
                 if x >= width:
