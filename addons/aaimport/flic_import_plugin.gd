@@ -225,7 +225,7 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
             var count = get_signed_8(file)
             if count > 0: # copy count words to image
               if x >= width:
-                  print("x >= width")
+                print("x >= width")
                 return ERR_FILE_CORRUPT
               for c in range(count * 2):
                 if x >= width:
