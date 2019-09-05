@@ -260,7 +260,11 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
       if framerect.position.x >= texture_size.x:
         framerect.position.x = 0
         framerect.position.y += options.clip.size.y
-      # TODO notice when we are out of image space and stop
+        if framerect.position.y + options.clip.size.y >= texture_size.y:
+          if frame+1 < lastframe:
+            print("warning: FLIC import no more room in texture with ",
+              lastframe - frame, " frames remaining to read")
+          break
   frameimage.unlock()
   image.unlock()
   save_stex(image, save_path)
