@@ -198,6 +198,9 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
           var packet_count = 0
           var parsing_opcodes = true
           while parsing_opcodes:
+            if y >= height:
+              print("y ", y, " >= height ", height)
+              return ERR_FILE_CORRUPT
             var opcode = file.get_16()
             var opcode_type = ((opcode & 0xC000) >> 14)
             match opcode_type:
@@ -213,9 +216,6 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
               3:
                 var skip_lines = 0x7fff - (opcode & 0x7fff) # abs of two-complement
                 y += skip_lines
-                if y >= height:
-                  print("y >= height")
-                  return ERR_FILE_CORRUPT
                 if y < 0:
                   print("y < 0")
                   return ERR_FILE_CORRUPT
@@ -248,9 +248,6 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
                 frameimage.set_pixel(x, y, color2)
                 x += 1
           y += 1
-          if y >= height:
-            print("y >= height")
-            return ERR_FILE_CORRUPT
       else:
         print("FLIC unknown chunk type %d" % [chunktype])
       file.seek(chunkstart + chunksize)
