@@ -113,4 +113,4 @@ GIF that Animator can open looks something like this:
 convert infile.png -background black -extent 320x200 GIF87:outfile.gif
 #+END_SRC
 ** License
-See [[LICENSE.TXT]].
+See [[LICENSE.txt]].
