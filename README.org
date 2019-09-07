@@ -39,6 +39,9 @@ The location of a cel copied in Animator is saved in the CEL file,
 but that information is not used by the importer. Only the size,
 palette, and image data is imported.
 
+(NOTE: CEL-files saved from Animator Pro are actually small FLC-files,
+not at all the same as old Animator CEL, and are not supported by
+this importer.)
 *** PLY
 Polygons drawn in Animator can be saved to these simple binary files.
 This importer creates a PackedScene containing a Path2D node. Coordinates
