@@ -8,6 +8,7 @@ const FLI_LC = 12
 const FLI_BLACK = 13
 const FLI_BRUN = 15
 const FLI_COPY = 16
+const FLC_PSTAMP = 18
 
 func get_importer_name():
   return "aaimport.fli"
@@ -40,7 +41,7 @@ func get_import_options(preset):
     {"name": "start_frame",
     "default_value": 1},
     {"name": "end_frame",
-    "default_value": 9999}]
+    "default_value": 60}]
 
 func get_option_visibility(option, options):
   return true
@@ -248,6 +249,8 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
                 frameimage.set_pixel(x, y, color2)
                 x += 1
           y += 1
+      elif chunktype == FLC_PSTAMP:
+          pass # ignore FLC thumbnail
       else:
         print("FLIC unknown chunk type %d" % [chunktype])
       file.seek(chunkstart + chunksize)
