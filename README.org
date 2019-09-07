@@ -5,6 +5,8 @@ simply Animator in this document). More background information can be found
 [[https://en.wikipedia.org/wiki/Autodesk_Animator][on wikipedia]], full Animator [[https://github.com/AnimatorPro/Animator-Pro][source code is on GitHub]], as is the [[https://github.com/AnimatorPro/Animator-Pro/downloads][download page]].
 This addon was tested in Godot 3.1.1.
 
+[[godotimportscreenshot.png]]
+
 ** Supported File Formats
 Importers for the following file formats are
 included in this addon. For technical details about
