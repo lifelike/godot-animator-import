@@ -62,13 +62,16 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
       return ERR_FILE_CORRUPT
   var colors = read_palette(file, options.alpha)
   var image = Image.new()
-  var format = Image.FORMAT_RGBA8 if options.alpha else Image.FORMAT_RGB8
-  image.create(width, height, false, format)
-  image.lock()
-  for y in range(height):
-    for x in range(width):
-      var i = file.get_8()
-      image.set_pixel(x, y, colors[i])
-  image.unlock()
+  write(image, options, width, height, colors, file)
   save_stex(image, save_path)
   return OK
+
+func write(image, options, width, height, colors, file):
+    var format = Image.FORMAT_RGBA8 if options.alpha else Image.FORMAT_RGB8
+    image.create(width, height, false, format)
+    image.lock()
+    for y in range(height):
+        for x in range(width):
+            var i = file.get_8()
+            image.set_pixel(x, y, colors[i])
+    image.unlock()
