@@ -24,7 +24,9 @@ func get_preset_name(preset):
 
 func get_import_options(preset):
   return [{"name": "alpha",
-          "default_value": true}]
+          "default_value": true},
+            {"name": "filter",
+            "default_value": false}]
           
 func get_option_visibility(option, options):
   return true
@@ -63,7 +65,8 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
   var colors = read_palette(file, options.alpha)
   var image = Image.new()
   write(image, options, width, height, colors, file)
-  save_stex(image, save_path)
+  var filter = "filter" in options and options.filter
+  save_stex(image, save_path, filter)
   return OK
 
 func write(image, options, width, height, colors, file):

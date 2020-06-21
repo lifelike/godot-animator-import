@@ -1,6 +1,8 @@
 tool
 extends EditorImportPlugin
 
+const TEXTURE_FLAG_FILTER = 4  # from visual_server.h in godot
+
 func make_empty_palette():
   var colors = []
   for c in range(256):
@@ -28,7 +30,7 @@ func read_palette(file, alpha=true):
   read_palette_into(file, colors, alpha)
   return colors
 
-func save_stex(image, save_path):
+func save_stex(image, save_path, filter=false):
   var tmppng = "%s-tmp.png" % [save_path]
   image.save_png(tmppng)
   var pngf = File.new()
@@ -45,7 +47,7 @@ func save_stex(image, save_path):
   stexf.store_8(0x54) # T
   stexf.store_32(image.get_width())
   stexf.store_32(image.get_height())
-  stexf.store_32(4) # flags (whatever 4 is)
+  stexf.store_32(TEXTURE_FLAG_FILTER if filter else 0)
   stexf.store_32(0x07100000) # data format
   stexf.store_32(1) # nr mipmaps
   stexf.store_32(pnglen + 6)
