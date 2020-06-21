@@ -41,7 +41,9 @@ func get_import_options(preset):
     {"name": "start_frame",
     "default_value": 1},
     {"name": "end_frame",
-    "default_value": 60}]
+    "default_value": 60},
+    {"name": "filter",
+     "default_value": false}]
 
 func get_option_visibility(option, options):
   return true
@@ -267,5 +269,6 @@ func import(source_file, save_path, options, r_platform_variants, r_gen_files):
           break
   frameimage.unlock()
   image.unlock()
-  save_stex(image, save_path)
+  var filter = "filter" in options and options.filter
+  save_stex(image, save_path, filter)
   return OK
