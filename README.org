@@ -4,7 +4,7 @@ A collection of [[https://godotengine.org/][Godot]] importer scripts for files s
 application formerly known as Autodesk Animator (also Ani Pro, PJ Paint; called
 simply Animator in this document). More background information can be found
 [[https://en.wikipedia.org/wiki/Autodesk_Animator][on wikipedia]], full Animator [[https://github.com/AnimatorPro/Animator-Pro][source code is on GitHub]], as is the [[https://github.com/AnimatorPro/Animator-Pro/downloads][download page]].
-This addon was tested in Godot 3.2.3 and Godot 3.3-rc6.
+The current version was tested in Godot 3.2.3, Godot 3.3.4, and Godot 3.4.1.
 
 [[godotimportscreenshot.png]]
 
